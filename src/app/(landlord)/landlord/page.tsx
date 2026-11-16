@@ -47,15 +47,15 @@ export default async function LandlordDashboard() {
         </div>
       )}
 
-      <dl className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {tiles.map((t) => {
           const body = (
-            <div className="rounded-xl border p-4 transition hover:shadow-sm">
+            <dl className="rounded-xl border p-4 transition hover:shadow-sm">
               <dt className="text-muted-foreground flex items-center gap-2 text-sm">
                 <t.icon className="size-4" aria-hidden /> {t.label}
               </dt>
               <dd className="mt-1 text-3xl font-bold tabular-nums">{t.value}</dd>
-            </div>
+            </dl>
           );
           return t.href ? (
             <Link key={t.label} href={t.href}>
@@ -65,7 +65,7 @@ export default async function LandlordDashboard() {
             <div key={t.label}>{body}</div>
           );
         })}
-      </dl>
+      </div>
 
       <section className="mt-8">
         <h2 className="mb-3 text-lg font-semibold">Listings by status</h2>

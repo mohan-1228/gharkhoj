@@ -186,12 +186,16 @@ export default async function ListingPage({ params }: Props) {
           <section aria-label="Key facts">
             <dl className="grid grid-cols-2 gap-3 rounded-xl border p-4 sm:grid-cols-3">
               {facts.map((f) => (
-                <div key={f.label} className="flex items-center gap-3">
-                  <f.icon className="text-muted-foreground size-5" aria-hidden />
-                  <div>
-                    <dt className="text-muted-foreground text-xs">{f.label}</dt>
-                    <dd className="font-medium">{f.value}</dd>
-                  </div>
+                // Valid <dl> grouping: each <div> contains only <dt>/<dd>; the icon lives inside <dt>.
+                <div key={f.label} className="grid grid-cols-[auto_1fr] items-center gap-x-3">
+                  <dt className="text-muted-foreground row-span-2 text-xs">
+                    <f.icon className="size-5" aria-hidden />
+                    <span className="sr-only">{f.label}</span>
+                  </dt>
+                  <dd className="text-muted-foreground text-xs" aria-hidden>
+                    {f.label}
+                  </dd>
+                  <dd className="font-medium">{f.value}</dd>
                 </div>
               ))}
             </dl>

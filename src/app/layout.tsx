@@ -5,6 +5,7 @@ import { getLocale } from "next-intl/server";
 import { Providers } from "@/components/providers";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { CookieNotice } from "@/components/layout/cookie-notice";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"], display: "swap" });
@@ -49,6 +50,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               {children}
             </main>
             <SiteFooter />
+            <CookieNotice />
           </Providers>
         </NextIntlClientProvider>
       </body>
