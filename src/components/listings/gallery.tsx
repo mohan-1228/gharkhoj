@@ -52,7 +52,6 @@ export function Gallery({ photos, title }: { photos: PhotoDto[]; title: string }
               aria-label={`Open photo ${i + 1} of ${ready.length} fullscreen`}
               aria-roledescription="slide"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element -- responsive WebP variants */}
               <img
                 src={p.urls!.lg}
                 srcSet={`${p.urls!.sm} 320w, ${p.urls!.md} 640w, ${p.urls!.lg} 1280w`}

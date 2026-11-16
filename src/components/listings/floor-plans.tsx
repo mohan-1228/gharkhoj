@@ -22,7 +22,6 @@ export function FloorPlans({ plans }: { plans: FloorPlanDto[] }) {
                 onClick={() => setIndex(images.findIndex((x) => x.id === p.id))}
                 className="block w-full overflow-hidden rounded-lg border text-left hover:shadow"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element -- pre-generated variant */}
                 <img
                   src={p.thumbUrl!}
                   alt={p.label ?? "Floor plan"}

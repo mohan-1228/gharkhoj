@@ -25,7 +25,6 @@ export interface SearchMapProps {
 function PinPopup({ pin }: { pin: MapPin }) {
   return (
     <a href={`/listing/${pin.slug}`} className="block w-52 text-inherit no-underline">
-      {/* eslint-disable-next-line @next/next/no-img-element -- pre-generated thumbnail */}
       {pin.image && <img src={pin.image} alt="" className="mb-2 aspect-[3/2] w-full rounded object-cover" />}
       <strong className="block text-sm">{formatRent(pin.rentNpr)}</strong>
       <span className="line-clamp-2 block text-xs text-gray-600">{pin.title}</span>

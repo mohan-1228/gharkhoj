@@ -234,7 +234,6 @@ export function MediaManager({
           >
             <div className="bg-muted relative aspect-[3/2]">
               {p.urls ? (
-                // eslint-disable-next-line @next/next/no-img-element -- pre-generated variants served from CloudFront
                 <img
                   src={p.urls.sm}
                   alt={p.caption ?? p.roomLabel ?? `Photo ${i + 1}`}
@@ -347,7 +346,6 @@ export function MediaManager({
             {plans.map((f) => (
               <li key={f.id} className="flex items-center gap-3 p-3 text-sm">
                 {f.thumbUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- pre-generated variant
                   <img src={f.thumbUrl} alt="" className="size-12 rounded object-cover" />
                 ) : (
                   <FileText className="text-muted-foreground size-8" aria-hidden />
