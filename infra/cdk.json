@@ -11,7 +11,7 @@
     "alarmEmail": "",
     "mailFrom": "",
     "bootstrapAdminEmails": "",
-    "monthlyBudgetUsd": 75,
+    "monthlyBudgetUsd": 150,
     "natGateways": 1,
     "dbInstanceClass": "t4g.micro",
     "desiredCount": 1,
