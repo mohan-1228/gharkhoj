@@ -1,0 +1,11 @@
+{
+  "name": "GharKhoj — Rentals in Nepal",
+  "short_name": "GharKhoj",
+  "description": "Find rooms, flats, apartments and houses for rent across Nepal.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#b91c1c",
+  "lang": "en",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

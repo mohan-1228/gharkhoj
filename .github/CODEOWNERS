@@ -1,0 +1,5 @@
+# Default reviewers for everything
+*                     @mohan-1228
+/infra/               @mohan-1228
+/prisma/migrations/   @mohan-1228
+/src/server/auth/     @mohan-1228

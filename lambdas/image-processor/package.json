@@ -1,0 +1,9 @@
+{
+  "name": "@gharkhoj/image-processor",
+  "private": true,
+  "description": "S3 ObjectCreated → resize/strip EXIF/WebP variants + Rekognition moderation → callback to app",
+  "type": "module",
+  "dependencies": {
+    "sharp": "^0.35.5"
+  }
+}

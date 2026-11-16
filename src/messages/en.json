@@ -1,0 +1,51 @@
+{
+  "nav": {
+    "rent": "Find a rental",
+    "listProperty": "List your property",
+    "favorites": "Favorites",
+    "tours": "My tours",
+    "dashboard": "Landlord dashboard",
+    "admin": "Admin",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "account": "Account"
+  },
+  "home": {
+    "heroTitle": "Find your next home in Nepal",
+    "heroSubtitle": "Rooms, flats, apartments and houses from verified landlords across Kathmandu, Pokhara and beyond.",
+    "searchPlaceholder": "City, neighbourhood or landmark",
+    "search": "Search",
+    "featured": "Recently listed",
+    "popularCities": "Popular cities",
+    "forLandlords": "Are you a landlord?",
+    "forLandlordsBody": "List your property for free and reach thousands of renters looking for a place right now.",
+    "startListing": "Start listing"
+  },
+  "listing": {
+    "perMonth": "/ month",
+    "deposit": "Deposit",
+    "negotiable": "Negotiable",
+    "availableFrom": "Available from",
+    "beds": "{count, plural, =0 {Studio} one {# bed} other {# beds}}",
+    "baths": "{count, plural, one {# bath} other {# baths}}",
+    "scheduleTour": "Schedule a tour",
+    "report": "Report listing",
+    "share": "Share",
+    "approximateLocation": "Approximate location shown for privacy",
+    "similar": "Similar listings"
+  },
+  "search": {
+    "results": "{count, plural, =0 {No rentals found} one {# rental} other {# rentals}}",
+    "filters": "Filters",
+    "clear": "Clear all",
+    "map": "Map",
+    "list": "List",
+    "searchThisArea": "Search this area"
+  },
+  "footer": {
+    "tagline": "Rentals across Nepal, made simple.",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "help": "Help"
+  }
+}
