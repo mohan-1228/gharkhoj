@@ -30,6 +30,9 @@ const eslintConfig = [
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
       "@typescript-eslint/consistent-type-imports": ["error", { fixStyle: "inline-type-imports" }],
       "no-console": ["warn", { allow: ["warn", "error"] }],
+      // Images are pre-resized to WebP 320/640/1280 by our pipeline and served from CloudFront
+      // with explicit srcset, so next/image's optimizer would only add cost (ADR-0007).
+      "@next/next/no-img-element": "off",
     },
   },
   {

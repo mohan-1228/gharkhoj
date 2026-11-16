@@ -44,7 +44,6 @@ export function RecentlyViewedList() {
       {items.map((i) => (
         <li key={i.slug}>
           <Link href={`/listing/${i.slug}`} className="hover:bg-muted/50 flex gap-3 rounded-lg border p-2">
-            {/* eslint-disable-next-line @next/next/no-img-element -- thumbnail variant */}
             {i.image ? (
               <img src={i.image} alt="" className="size-16 rounded object-cover" />
             ) : (

@@ -11,7 +11,7 @@ const envSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     APP_URL: z.string().url().default("http://localhost:3000"),
-    LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),
+    LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
 
     DATABASE_URL: z.string().min(1),
 
@@ -40,6 +40,9 @@ const envSchema = z
     MAIL_FROM: z.string().default("GharKhoj <no-reply@gharkhoj.local>"),
     SMTP_HOST: z.string().default("localhost"),
     SMTP_PORT: z.coerce.number().int().default(1025),
+
+    // SMS via Amazon SNS (tour reminders). Off until Nepal deliverability is verified.
+    SMS_ENABLED: bool.default(false),
 
     // Geocoding
     GEOCODER_URL: z.string().url().default("https://nominatim.openstreetmap.org"),
