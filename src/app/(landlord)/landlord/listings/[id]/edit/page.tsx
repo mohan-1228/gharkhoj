@@ -7,6 +7,8 @@ import { getCurrentUser } from "@/server/auth/session";
 import { AppError } from "@/server/lib/errors";
 import { getListingForEdit } from "@/server/services/listing-service";
 import { getListingFormLookups } from "@/server/services/lookups-for-form";
+import { floorPlanDto, photoDto } from "@/server/services/media-service";
+import { MediaManager } from "@/components/landlord/media-manager";
 
 export const metadata: Metadata = { title: "Edit listing", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -30,6 +32,13 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
           <strong>Rejected by moderator:</strong> {listing.rejectionReason}. Fix the issue and submit again.
         </p>
       )}
+      <div className="mt-6">
+        <MediaManager
+          listingId={listing.id}
+          initialPhotos={listing.photos.map(photoDto)}
+          initialFloorPlans={listing.floorPlans.map(floorPlanDto)}
+        />
+      </div>
       <div className="mt-6">
         <ListingForm
           mode="edit"

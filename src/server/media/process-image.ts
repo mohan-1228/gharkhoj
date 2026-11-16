@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import { IMAGE_WIDTHS } from "@/lib/constants";
+import { IMAGE_WIDTHS } from "../../lib/constants"; // relative: also bundled into the Lambda
 
 /**
  * Pure image pipeline shared by the in-process path (local dev) and the

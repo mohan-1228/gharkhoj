@@ -8,6 +8,9 @@ import { prisma } from "../lib/db";
 import { AppError, notFound } from "../lib/errors";
 import * as repo from "../repositories/listing-repository";
 import { audit } from "./audit";
+import { collectListingObjectKeys } from "./media-service";
+import { deleteObjects } from "../lib/storage";
+import { logger } from "../lib/logger";
 import { nextStatus, REVIEW_SENSITIVE_FIELDS, type ListingTransition } from "./listing-state";
 
 function makeSlug(title: string): string {
@@ -109,8 +112,11 @@ export async function updateListing(actor: SessionUser | null, id: string, input
 export async function deleteListing(actor: SessionUser | null, id: string) {
   assertRole(actor, "landlord", "admin");
   const listing = await loadOwned(actor, id);
+  const keys = await collectListingObjectKeys(id);
   await prisma.listing.delete({ where: { id: listing.id } });
   await audit(actor.id, "listing.delete", "listing", id, { title: listing.title });
+  // Best effort: orphaned objects are also swept by the S3 lifecycle rule on uploads/.
+  await deleteObjects(keys).catch((err) => logger.warn({ err, listingId: id }, "S3 cleanup after delete failed"));
   return listing;
 }
 
@@ -130,6 +136,8 @@ export async function assertSubmittable(id: string) {
   const problems: string[] = [];
   const loc = (await repo.getLocations(prisma, [id])).get(id);
   if (!loc) problems.push("Place the property on the map");
+  const readyPhotos = await prisma.listingPhoto.count({ where: { listingId: id, status: "ready" } });
+  if (readyPhotos === 0) problems.push("Add at least one photo");
   if (problems.length) throw new AppError("INVALID_STATE", "Listing is not ready to submit", { problems });
 }
 
