@@ -50,6 +50,17 @@ const envSchema = z
 
     // Shared secret used by Lambdas (image processor, tour reminders) to call internal APIs.
     INTERNAL_API_SECRET: z.string().min(32),
+
+    // Comma-separated emails that become admin on (verified) sign-in — bootstraps the first admin.
+    BOOTSTRAP_ADMIN_EMAILS: z
+      .string()
+      .optional()
+      .transform((v) =>
+        (v ?? "")
+          .split(",")
+          .map((e) => e.trim().toLowerCase())
+          .filter(Boolean),
+      ),
   })
   .superRefine((env, ctx) => {
     if (env.AUTH_MODE === "cognito") {

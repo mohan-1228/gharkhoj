@@ -1,0 +1,27 @@
+{
+  "app": "npx tsx bin/app.ts",
+  "watch": {
+    "include": ["bin/**", "lib/**"]
+  },
+  "context": {
+    "appName": "gharkhoj",
+    "envName": "prod",
+    "region": "ap-south-1",
+    "githubRepo": "mohan-1228/gharkhoj",
+    "alarmEmail": "",
+    "mailFrom": "",
+    "bootstrapAdminEmails": "",
+    "monthlyBudgetUsd": 75,
+    "natGateways": 1,
+    "dbInstanceClass": "t4g.micro",
+    "desiredCount": 1,
+    "@aws-cdk/aws-lambda:recognizeLayerVersion": true,
+    "@aws-cdk/core:checkSecretUsage": true,
+    "@aws-cdk/core:target-partitions": ["aws"],
+    "@aws-cdk/aws-ec2:restrictDefaultSecurityGroup": true,
+    "@aws-cdk/aws-iam:minimizePolicies": true,
+    "@aws-cdk/aws-s3:createDefaultLoggingPolicy": true,
+    "@aws-cdk/aws-rds:auroraClusterChangeScopeOfInstanceParameterGroupWithEachParameters": true,
+    "@aws-cdk/core:defaultCrossStackReferences": "strong"
+  }
+}
