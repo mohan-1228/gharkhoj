@@ -1,0 +1,4 @@
+# Root = the Next.js app. infra/ = AWS CDK app (separate dependencies).
+packages:
+  - "."
+  - "infra"

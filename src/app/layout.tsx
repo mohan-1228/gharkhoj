@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   description:
     "Find rooms, flats, apartments, houses and office space for rent in Kathmandu, Lalitpur, Pokhara and across Nepal. Search by map, filter by price and amenities, and schedule tours.",
   applicationName: "GharKhoj",
+  manifest: "/manifest.webmanifest",
+  icons: { icon: "/favicon.svg" },
   openGraph: { type: "website", siteName: "GharKhoj", locale: "en_US" },
   twitter: { card: "summary_large_image" },
   formatDetection: { telephone: false },

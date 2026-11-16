@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { prisma } from "@/server/lib/db";
 import { PROPERTY_TYPE_SLUGS } from "@/lib/constants";
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic"; // generated on request (needs DB)
 
 /** sitemap.xml: home, city pages, neighbourhood + type pages, every published listing. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

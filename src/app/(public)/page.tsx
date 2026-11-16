@@ -7,7 +7,9 @@ import { FavoriteButton } from "@/components/listings/favorite-button";
 import { search } from "@/server/services/search-service";
 import { getCities } from "@/server/services/lookup-service";
 
-export const revalidate = 300; // ISR: rebuild the homepage at most every 5 minutes
+// Rendered per request (no DB at Docker build time). The HTML is user-independent
+// (auth hydrates client-side), so CloudFront can cache it via Cache-Control.
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const t = await getTranslations("home");

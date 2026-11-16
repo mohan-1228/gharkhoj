@@ -8,6 +8,7 @@ import { prisma } from "../lib/db";
 import { AppError } from "../lib/errors";
 import { normalizeNepaliMobile } from "@/lib/format";
 import { audit } from "./audit";
+import { env } from "../lib/env";
 
 /** Only these roles can be self-selected at sign-up. Admin is granted by an admin. */
 export type SignupRole = "renter" | "landlord";
@@ -24,6 +25,18 @@ export function safeReturnTo(input: string | null | undefined, fallback = "/"): 
  */
 export async function upsertFromCognito(identity: CognitoIdentity, signupRole: SignupRole) {
   if (!identity.email) throw new AppError("UNAUTHENTICATED", "Your account has no email address");
+  const user = await findOrCreateFromCognito(identity, signupRole);
+  // Bootstrap: allow-listed, VERIFIED emails are promoted to admin (first-admin problem).
+  if (identity.emailVerified && env.BOOTSTRAP_ADMIN_EMAILS.includes(identity.email) && user.role !== "admin") {
+    const promoted = await prisma.user.update({ where: { id: user.id }, data: { role: "admin" } });
+    await syncCognitoGroup(identity.sub, "admin", user.role);
+    await audit(null, "user.bootstrap_admin", "user", user.id);
+    return promoted;
+  }
+  return user;
+}
+
+async function findOrCreateFromCognito(identity: CognitoIdentity, signupRole: SignupRole) {
   const bySub = await prisma.user.findUnique({ where: { cognitoSub: identity.sub } });
   if (bySub) {
     if (bySub.isBanned) throw new AppError("FORBIDDEN", "This account has been suspended");
