@@ -10,6 +10,8 @@ import { AmenityIcon } from "@/components/listings/amenity-icon";
 import { ListingCard } from "@/components/listings/listing-card";
 import { ListingStatusBadge } from "@/components/listings/status-badge";
 import { ListingSidePanel } from "@/components/listings/listing-side-panel";
+import { FavoriteButton } from "@/components/listings/favorite-button";
+import { RecordView } from "@/components/listings/recently-viewed";
 import { ListingMiniMap } from "@/components/map/listing-mini-map";
 import { getCurrentUser } from "@/server/auth/session";
 import { AppError } from "@/server/lib/errors";
@@ -119,6 +121,11 @@ export default async function ListingPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
 
+      {l.status === "published" && (
+        <RecordView
+          item={{ slug: l.slug, title: l.title, rentNpr: l.rentNpr, image: l.photos[0]?.urls?.sm ?? null, place }}
+        />
+      )}
       <nav aria-label="Breadcrumb" className="text-muted-foreground mb-3 text-sm">
         <ol className="flex flex-wrap items-center gap-1">
           <li>
@@ -154,7 +161,10 @@ export default async function ListingPage({ params }: Props) {
           <Gallery photos={l.photos} title={l.title} />
 
           <header className="space-y-2">
-            <p className="text-primary text-sm font-medium">{PROPERTY_TYPE_LABELS[l.propertyType]}</p>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-primary text-sm font-medium">{PROPERTY_TYPE_LABELS[l.propertyType]}</p>
+              {l.status === "published" && <FavoriteButton listingId={l.id} withLabel className="border" />}
+            </div>
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{l.title}</h1>
             <p className="text-muted-foreground flex items-center gap-1">
               <MapPin className="size-4" aria-hidden />

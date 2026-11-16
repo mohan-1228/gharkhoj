@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ListingCard } from "@/components/listings/listing-card";
+import { FavoriteButton } from "@/components/listings/favorite-button";
 import { search } from "@/server/services/search-service";
 import { getCities } from "@/server/services/lookup-service";
 
@@ -92,7 +93,7 @@ export default async function HomePage() {
           <ul className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {featured.items.map((l, i) => (
               <li key={l.id}>
-                <ListingCard listing={l} priority={i < 2} />
+                <ListingCard listing={l} priority={i < 2} action={<FavoriteButton listingId={l.id} />} />
               </li>
             ))}
           </ul>
