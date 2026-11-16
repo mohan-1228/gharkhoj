@@ -28,7 +28,10 @@ export default defineConfig({
           include: ["tests/integration/**/*.test.ts"],
           setupFiles: ["tests/support/setup-integration.ts"],
           globalSetup: ["tests/support/global-setup-integration.ts"],
+          // Tests share one database: run files strictly one after another.
           fileParallelism: false,
+          pool: "forks",
+          poolOptions: { forks: { singleFork: true } },
           testTimeout: 30_000,
           hookTimeout: 60_000,
         },
