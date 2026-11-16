@@ -12,6 +12,7 @@ import { ListingStatusBadge } from "@/components/listings/status-badge";
 import { ListingSidePanel } from "@/components/listings/listing-side-panel";
 import { FavoriteButton } from "@/components/listings/favorite-button";
 import { RecordView } from "@/components/listings/recently-viewed";
+import { ReportButton } from "@/components/listings/report-button";
 import { ListingMiniMap } from "@/components/map/listing-mini-map";
 import { getCurrentUser } from "@/server/auth/session";
 import { AppError } from "@/server/lib/errors";
@@ -315,6 +316,7 @@ export default async function ListingPage({ params }: Props) {
 
           <section className="flex flex-wrap items-center justify-between gap-3 border-t pt-6">
             <ShareButtons url={url} title={l.title} />
+            {l.status === "published" && !l.isOwner && <ReportButton listingId={l.id} />}
             <p className="text-muted-foreground text-xs">Listing updated {formatDateOnly(l.updatedAt)}</p>
           </section>
         </div>
