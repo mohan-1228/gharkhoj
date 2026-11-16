@@ -11,6 +11,7 @@ import { audit } from "./audit";
 import { collectListingObjectKeys } from "./media-service";
 import { deleteObjects } from "../lib/storage";
 import { logger } from "../lib/logger";
+import { rateLimit } from "../lib/rate-limit";
 import { nextStatus, REVIEW_SENSITIVE_FIELDS, type ListingTransition } from "./listing-state";
 
 function makeSlug(title: string): string {
@@ -39,6 +40,8 @@ async function assertNeighborhoodInCity(db: repo.Db, cityId: number, neighborhoo
 
 export async function createDraft(actor: SessionUser | null, input: CreateListingInput) {
   assertRole(actor, "landlord", "admin");
+  rateLimit(`listing-create:${actor.id}`, 20, 60 * 60_000); // spam guard
+
   return prisma.$transaction(async (tx) => {
     const city = await tx.city.findFirst({ where: { id: input.cityId, isActive: true } });
     if (!city)
