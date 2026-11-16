@@ -1,0 +1,10 @@
+pnpm-lock.yaml
+.next
+node_modules
+prisma/migrations
+infra/cdk.out
+coverage
+playwright-report
+test-results
+src/components/ui
+CLAUDE.md

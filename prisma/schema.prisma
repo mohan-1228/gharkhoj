@@ -1,0 +1,497 @@
+// GharKhoj data model — PostgreSQL 16 + PostGIS.
+// Geo and full-text columns use `Unsupported(...)`; they are read/written with
+// parameterised raw SQL in src/server/repositories (see ADR-0005).
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+  binaryTargets   = ["native", "linux-musl-openssl-3.0.x", "linux-musl-arm64-openssl-3.0.x", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis, pg_trgm]
+}
+
+// ───────────────────────────── Enums ─────────────────────────────
+
+enum Role {
+  renter
+  landlord
+  admin
+}
+
+enum PropertyType {
+  room
+  studio_flat
+  apartment
+  house
+  office_space
+}
+
+enum ListingStatus {
+  draft
+  pending_review
+  published
+  paused
+  rented
+  archived
+  rejected
+}
+
+enum Furnishing {
+  unfurnished
+  semi
+  fully
+}
+
+enum ElectricityBackup {
+  none
+  inverter
+  generator
+  solar
+}
+
+enum GasSupply {
+  none
+  lpg
+  piped
+}
+
+enum Facing {
+  north
+  north_east
+  east
+  south_east
+  south
+  south_west
+  west
+  north_west
+}
+
+enum VerificationStatus {
+  unverified
+  pending
+  verified
+  rejected
+}
+
+enum AmenityCategory {
+  basics
+  building
+  policies
+  nearby
+}
+
+enum MediaStatus {
+  processing
+  ready
+  rejected
+}
+
+enum FloorPlanFileType {
+  image
+  pdf
+}
+
+enum TourStatus {
+  requested
+  confirmed
+  declined
+  rescheduled
+  completed
+  cancelled
+  no_show
+}
+
+enum ReportReason {
+  scam
+  inaccurate
+  already_rented
+  offensive
+  duplicate
+  other
+}
+
+enum ReportStatus {
+  open
+  resolved
+  dismissed
+}
+
+enum AlertFrequency {
+  none
+  daily
+  weekly
+}
+
+// ───────────────────────────── Users ─────────────────────────────
+
+model User {
+  id         String   @id @default(uuid()) @db.Uuid
+  cognitoSub String?  @unique @map("cognito_sub")
+  email      String   @unique
+  phone      String?
+  fullName   String   @map("full_name")
+  role       Role     @default(renter)
+  avatarUrl  String?  @map("avatar_url")
+  isVerified Boolean  @default(false) @map("is_verified")
+  isBanned   Boolean  @default(false) @map("is_banned")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  landlordProfile LandlordProfile?
+  listings        Listing[]        @relation("LandlordListings")
+  favorites       Favorite[]
+  savedSearches   SavedSearch[]
+  tourRequests    TourRequest[]    @relation("RenterTours")
+  reports         Report[]         @relation("ReportReporter")
+  resolvedReports Report[]         @relation("ReportResolver")
+  auditLogs       AuditLog[]
+
+  @@map("users")
+}
+
+model LandlordProfile {
+  userId             String             @id @map("user_id") @db.Uuid
+  businessName       String?            @map("business_name")
+  bio                String?
+  verificationStatus VerificationStatus @default(unverified) @map("verification_status")
+  verificationDocKey String?            @map("verification_doc_key")
+  verificationNote   String?            @map("verification_note")
+  responseRate       Int?               @map("response_rate") // percentage 0–100
+  createdAt          DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("landlord_profiles")
+}
+
+// ─────────────────────────── Geography ───────────────────────────
+
+model City {
+  id       Int                                    @id @default(autoincrement())
+  name     String
+  nameNe   String?                                @map("name_ne")
+  slug     String                                 @unique
+  province String
+  district String
+  centroid Unsupported("geography(Point, 4326)")?
+  isActive Boolean                                @default(true) @map("is_active")
+
+  neighborhoods Neighborhood[]
+  listings      Listing[]
+
+  @@map("cities")
+}
+
+model Neighborhood {
+  id       Int                                    @id @default(autoincrement())
+  cityId   Int                                    @map("city_id")
+  name     String
+  nameNe   String?                                @map("name_ne")
+  slug     String
+  centroid Unsupported("geography(Point, 4326)")?
+
+  city     City      @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  listings Listing[]
+
+  @@unique([cityId, slug])
+  @@index([name(ops: raw("gin_trgm_ops"))], map: "neighborhoods_name_trgm_idx", type: Gin)
+  @@map("neighborhoods")
+}
+
+// ─────────────────────────── Listings ────────────────────────────
+
+model Listing {
+  id              String        @id @default(uuid()) @db.Uuid
+  landlordId      String        @map("landlord_id") @db.Uuid
+  title           String
+  slug            String        @unique
+  description     String
+  propertyType    PropertyType  @map("property_type")
+  status          ListingStatus @default(draft)
+  rejectionReason String?       @map("rejection_reason")
+
+  rentNpr        Int      @map("rent_npr")
+  depositNpr     Int?     @map("deposit_npr")
+  negotiable     Boolean  @default(false)
+  availableFrom  DateTime @map("available_from") @db.Date
+  minLeaseMonths Int      @default(1) @map("min_lease_months")
+
+  bedrooms     Int
+  bathrooms    Int
+  areaSqft     Int?       @map("area_sqft")
+  floorNo      Int?       @map("floor_no")
+  totalFloors  Int?       @map("total_floors")
+  furnishing   Furnishing @default(unfurnished)
+  parkingBikes Int        @default(0) @map("parking_bikes")
+  parkingCars  Int        @default(0) @map("parking_cars")
+  facing       Facing?
+  yearBuilt    Int?       @map("year_built")
+
+  // Utilities
+  waterSupply       String[]          @default([]) @map("water_supply") // tank | boring | municipal
+  electricityBackup ElectricityBackup @default(none) @map("electricity_backup")
+  internetAvailable Boolean           @default(false) @map("internet_available")
+  wasteCollection   Boolean           @default(false) @map("waste_collection")
+  gas               GasSupply         @default(none)
+
+  // Policies
+  tenantTypes    String[] @default([]) @map("tenant_types") // family | bachelors | students | couples | professionals
+  petsAllowed    Boolean  @default(false) @map("pets_allowed")
+  smokingAllowed Boolean  @default(false) @map("smoking_allowed")
+
+  // Address
+  cityId                Int                                    @map("city_id")
+  neighborhoodId        Int?                                   @map("neighborhood_id")
+  wardNo                Int?                                   @map("ward_no")
+  streetAddress         String?                                @map("street_address")
+  landmark              String?
+  location              Unsupported("geography(Point, 4326)")?
+  locationIsApproximate Boolean                                @default(true) @map("location_is_approximate")
+
+  // GENERATED ALWAYS column defined in the init migration (Prisma cannot model it;
+  // `migrate diff` will always report a harmless "DROP DEFAULT" for it).
+  searchVector Unsupported("tsvector")? @map("search_vector")
+
+  viewCount   Int       @default(0) @map("view_count")
+  publishedAt DateTime? @map("published_at") @db.Timestamptz(6)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  landlord     User               @relation("LandlordListings", fields: [landlordId], references: [id], onDelete: Cascade)
+  city         City               @relation(fields: [cityId], references: [id])
+  neighborhood Neighborhood?      @relation(fields: [neighborhoodId], references: [id])
+  photos       ListingPhoto[]
+  floorPlans   FloorPlan[]
+  amenities    ListingAmenity[]
+  favorites    Favorite[]
+  availability TourAvailability[]
+  exceptions   TourException[]
+  tourRequests TourRequest[]
+  reports      Report[]
+
+  @@index([status, cityId, rentNpr])
+  @@index([status, propertyType])
+  @@index([bedrooms])
+  @@index([landlordId])
+  @@index([location], type: Gist)
+  @@index([searchVector], type: Gin)
+  @@index([tenantTypes], type: Gin)
+  @@index([title(ops: raw("gin_trgm_ops"))], map: "listings_title_trgm_idx", type: Gin)
+  @@map("listings")
+}
+
+model ListingPhoto {
+  id        String      @id @default(uuid()) @db.Uuid
+  listingId String      @map("listing_id") @db.Uuid
+  s3Key     String      @map("s3_key") // original upload key (private)
+  mediaKey  String?     @map("media_key") // public variant prefix, e.g. media/listings/<id>/<photo>
+  caption   String?
+  roomLabel String?     @map("room_label")
+  sortOrder Int         @default(0) @map("sort_order")
+  isCover   Boolean     @default(false) @map("is_cover")
+  width     Int?
+  height    Int?
+  status    MediaStatus @default(processing)
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId, sortOrder])
+  @@map("listing_photos")
+}
+
+model FloorPlan {
+  id        String            @id @default(uuid()) @db.Uuid
+  listingId String            @map("listing_id") @db.Uuid
+  s3Key     String            @map("s3_key")
+  mediaKey  String?           @map("media_key")
+  label     String?
+  fileType  FloorPlanFileType @map("file_type")
+  sortOrder Int               @default(0) @map("sort_order")
+  status    MediaStatus       @default(processing)
+  createdAt DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId, sortOrder])
+  @@map("floor_plans")
+}
+
+model Amenity {
+  id       Int             @id @default(autoincrement())
+  code     String          @unique
+  label    String
+  labelNe  String?         @map("label_ne")
+  category AmenityCategory
+  icon     String?
+
+  listings ListingAmenity[]
+
+  @@map("amenities")
+}
+
+model ListingAmenity {
+  listingId String @map("listing_id") @db.Uuid
+  amenityId Int    @map("amenity_id")
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  amenity Amenity @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@id([listingId, amenityId])
+  @@index([amenityId])
+  @@map("listing_amenities")
+}
+
+// ─────────────────────────── Renter ──────────────────────────────
+
+model Favorite {
+  userId    String   @map("user_id") @db.Uuid
+  listingId String   @map("listing_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@id([userId, listingId])
+  @@index([listingId])
+  @@map("favorites")
+}
+
+model SavedSearch {
+  id             String         @id @default(uuid()) @db.Uuid
+  userId         String         @map("user_id") @db.Uuid
+  name           String
+  filters        Json
+  alertFrequency AlertFrequency @default(none) @map("alert_frequency")
+  lastSentAt     DateTime?      @map("last_sent_at") @db.Timestamptz(6)
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("saved_searches")
+}
+
+// ──────────────────────────── Tours ──────────────────────────────
+
+model TourAvailability {
+  id        String @id @default(uuid()) @db.Uuid
+  listingId String @map("listing_id") @db.Uuid
+  dayOfWeek Int    @map("day_of_week") // 0 = Sunday … 6 = Saturday
+  startTime String @map("start_time") // "HH:mm" Asia/Kathmandu
+  endTime   String @map("end_time")
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@map("tour_availability")
+}
+
+model TourException {
+  id          String   @id @default(uuid()) @db.Uuid
+  listingId   String   @map("listing_id") @db.Uuid
+  date        DateTime @db.Date
+  unavailable Boolean  @default(true)
+  note        String?
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([listingId, date])
+  @@map("tour_exceptions")
+}
+
+model TourRequest {
+  id              String     @id @default(uuid()) @db.Uuid
+  listingId       String     @map("listing_id") @db.Uuid
+  renterId        String     @map("renter_id") @db.Uuid
+  requestedSlots  Json       @map("requested_slots") // ISO timestamps (UTC), max 3
+  confirmedSlot   DateTime?  @map("confirmed_slot") @db.Timestamptz(6)
+  status          TourStatus @default(requested)
+  renterMessage   String?    @map("renter_message")
+  landlordNote    String?    @map("landlord_note")
+  contactPhone    String     @map("contact_phone")
+  idempotencyKey  String?    @map("idempotency_key")
+  reminder24hSent Boolean    @default(false) @map("reminder_24h_sent")
+  reminder2hSent  Boolean    @default(false) @map("reminder_2h_sent")
+  createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  renter  User    @relation("RenterTours", fields: [renterId], references: [id], onDelete: Cascade)
+
+  @@unique([renterId, idempotencyKey])
+  @@index([listingId, status])
+  @@index([status, confirmedSlot])
+  @@map("tour_requests")
+}
+
+// ─────────────────────── Messaging (phase 2) ─────────────────────
+
+model Conversation {
+  id         String   @id @default(uuid()) @db.Uuid
+  listingId  String   @map("listing_id") @db.Uuid
+  renterId   String   @map("renter_id") @db.Uuid
+  landlordId String   @map("landlord_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  messages Message[]
+
+  @@unique([listingId, renterId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String   @id @default(uuid()) @db.Uuid
+  conversationId String   @map("conversation_id") @db.Uuid
+  senderId       String   @map("sender_id") @db.Uuid
+  body           String
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@map("messages")
+}
+
+// ───────────────────────── Trust & safety ────────────────────────
+
+model Report {
+  id         String       @id @default(uuid()) @db.Uuid
+  listingId  String       @map("listing_id") @db.Uuid
+  reporterId String?      @map("reporter_id") @db.Uuid
+  reason     ReportReason
+  details    String?
+  status     ReportStatus @default(open)
+  resolvedBy String?      @map("resolved_by") @db.Uuid
+  resolution String?
+  createdAt  DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  resolvedAt DateTime?    @map("resolved_at") @db.Timestamptz(6)
+
+  listing  Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  reporter User?   @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: SetNull)
+  resolver User?   @relation("ReportResolver", fields: [resolvedBy], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@map("reports")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  actorId   String?  @map("actor_id") @db.Uuid
+  action    String
+  entity    String
+  entityId  String   @map("entity_id")
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@map("audit_log")
+}
