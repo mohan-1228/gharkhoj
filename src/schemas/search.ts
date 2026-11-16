@@ -35,6 +35,7 @@ export const searchQuerySchema = z.object({
   lat: latitude.optional(),
   lng: longitude.optional(),
   radiusKm: z.preprocess((v) => (v === "" || v == null ? undefined : v), z.coerce.number().min(0.2).max(50).optional()),
+  ids: z.array(z.string().uuid()).max(100).optional(), // internal use (favorites, similar)
   sort: z.enum(SORT_OPTIONS).default("newest"),
   page: z.coerce.number().int().min(1).max(500).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(20),

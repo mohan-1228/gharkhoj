@@ -92,8 +92,7 @@ export async function getSimilarListings(listing: {
 }) {
   const ids = await similarListingIds(listing.id, listing.city.id, listing.rentNpr, listing.propertyType);
   if (!ids.length) return [];
-  // Reuse the search projection for consistent cards.
-  const res = await search({ city: listing.city.slug, sort: "newest", page: 1, limit: 50 });
+  const res = await search({ ids, sort: "newest", page: 1, limit: ids.length });
   const byId = new Map(res.items.map((i) => [i.id, i]));
   return ids.map((id) => byId.get(id)).filter((x): x is NonNullable<typeof x> => Boolean(x));
 }

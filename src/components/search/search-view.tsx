@@ -3,6 +3,8 @@ import { searchQuerySchema, type SearchQuery } from "@/schemas/search";
 import { search } from "@/server/services/search-service";
 import { getAmenities, getCities, getNeighborhoods } from "@/server/services/lookup-service";
 import { ListingCard } from "@/components/listings/listing-card";
+import { FavoriteButton } from "@/components/listings/favorite-button";
+import { SaveSearchButton } from "./save-search-button";
 import { Filters, type FilterLookups } from "./filters";
 import { SortSelect } from "./sort-select";
 import { Pagination } from "./pagination";
@@ -102,6 +104,7 @@ export async function SearchView({
                   hrefMap={hrefWithView(raw, basePath, "map")}
                 />
               )}
+              <SaveSearchButton />
               <SortSelect canSortByDistance={q.lat != null && q.lng != null} />
             </div>
           </div>
@@ -120,7 +123,7 @@ export async function SearchView({
               <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {result.items.map((l, i) => (
                   <li key={l.id}>
-                    <ListingCard listing={l} priority={i < 2} />
+                    <ListingCard listing={l} priority={i < 2} action={<FavoriteButton listingId={l.id} />} />
                   </li>
                 ))}
               </ul>

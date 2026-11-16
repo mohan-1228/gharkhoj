@@ -39,6 +39,7 @@ export interface SearchRow {
 
 function whereClauses(q: SearchQuery): Prisma.Sql[] {
   const w: Prisma.Sql[] = [Prisma.sql`l.status = 'published'`];
+  if (q.ids) w.push(Prisma.sql`l.id = ANY(${q.ids}::uuid[])`);
   if (q.city) w.push(Prisma.sql`c.slug = ${q.city}`);
   if (q.neighborhood) w.push(Prisma.sql`n.slug = ${q.neighborhood}`);
   if (q.type?.length) w.push(Prisma.sql`l.property_type::text = ANY(${q.type}::text[])`);
