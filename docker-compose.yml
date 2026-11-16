@@ -1,0 +1,50 @@
+# Local development services for GharKhoj.
+# Usage: docker compose up -d
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: gharkhoj-db
+    environment:
+      POSTGRES_USER: gharkhoj
+      POSTGRES_PASSWORD: gharkhoj
+      POSTGRES_DB: gharkhoj
+    ports:
+      - "5433:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gharkhoj -d gharkhoj"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # S3-compatible object storage (stand-in for Amazon S3).
+  # Chainguard's MinIO build is used because upstream MinIO images are no longer
+  # published to Docker Hub. Bucket + CORS are created by `pnpm storage:setup`.
+  minio:
+    image: cgr.dev/chainguard/minio:latest
+    container_name: gharkhoj-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # Web console
+    volumes:
+      - minio-data:/data
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    container_name: gharkhoj-mailpit
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+volumes:
+  db-data:
+  minio-data:
