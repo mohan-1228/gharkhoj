@@ -28,6 +28,7 @@ export default defineConfig({
     url: `http://localhost:${PORT}/api/health`,
     reuseExistingServer: !process.env.CI,
     timeout: 300_000,
-    env: { APP_URL: `http://localhost:${PORT}` },
+    // Production build with dev sign-in: E2E tests need to act as several users without Cognito.
+    env: { APP_URL: `http://localhost:${PORT}`, ALLOW_DEV_AUTH: "true" },
   },
 });

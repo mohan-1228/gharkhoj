@@ -68,6 +68,7 @@ jobs:
       MEDIA_BASE_URL: http://localhost:9000/gharkhoj-media
       MAIL_TRANSPORT: smtp
       E2E_PORT: "3100"
+      ALLOW_DEV_AUTH: "true" # production build + dev sign-in for E2E only
     steps:
       - uses: actions/checkout@v4
       - name: Start MinIO (needs a command, so not a service container)

@@ -9,6 +9,7 @@ import { getListingForEdit } from "@/server/services/listing-service";
 import { getListingFormLookups } from "@/server/services/lookups-for-form";
 import { floorPlanDto, photoDto } from "@/server/services/media-service";
 import { MediaManager } from "@/components/landlord/media-manager";
+import { SubmitForReview } from "@/components/landlord/submit-for-review";
 
 export const metadata: Metadata = { title: "Edit listing", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -31,6 +32,11 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
         <p className="border-destructive/40 bg-destructive/5 mt-3 rounded-md border p-3 text-sm">
           <strong>Rejected by moderator:</strong> {listing.rejectionReason}. Fix the issue and submit again.
         </p>
+      )}
+      {(listing.status === "draft" || listing.status === "rejected") && (
+        <div className="mt-6">
+          <SubmitForReview listingId={listing.id} />
+        </div>
       )}
       <div className="mt-6">
         <MediaManager
