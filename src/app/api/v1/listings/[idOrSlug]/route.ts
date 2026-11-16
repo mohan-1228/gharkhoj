@@ -2,6 +2,7 @@ import { updateListingSchema } from "@/schemas/listing";
 import { getCurrentUser } from "@/server/auth/session";
 import { json, parseBody, route } from "@/server/lib/http";
 import * as listings from "@/server/services/listing-service";
+import { getPublicListing } from "@/server/services/listing-detail-service";
 
 type Params = { idOrSlug: string };
 
@@ -16,4 +17,9 @@ export const PATCH = route<Params>(async (req, { params }) => {
 export const DELETE = route<Params>(async (_req, { params }) => {
   await listings.deleteListing(await getCurrentUser(), params.idOrSlug);
   return new Response(null, { status: 204 });
+});
+
+/** GET /api/v1/listings/:slug — public detail (owner/admin can preview unpublished). */
+export const GET = route<Params>(async (_req, { params }) => {
+  return json(await getPublicListing(params.idOrSlug, await getCurrentUser()));
 });
