@@ -284,24 +284,24 @@ pnpm cdk diff / pnpm cdk deploy
 
 ## 10. Build Roadmap (do in order; mark each done)
 
-- [ ] **Phase 0 — Foundation:** repo, Next.js + TS + Tailwind + shadcn, ESLint/Prettier/Husky, Docker Compose (Postgres+PostGIS, MinIO, Mailpit), Prisma schema, seed data (cities, neighborhoods, amenities)
-- [ ] **Phase 1 — Listings CRUD:** data model, landlord create/edit/delete (stub auth with a hardcoded landlord), form with Zod validation
-- [ ] **Phase 2 — Media:** pre-signed uploads, photo reorder/cover, floor plans, thumbnail Lambda (local: sharp in-process)
-- [ ] **Phase 3 — Public search:** filters, sorting, pagination, URL-driven state, listing detail page, city/neighborhood SEO pages
-- [ ] **Phase 4 — Maps:** Leaflet map view, clustered pins, search-this-area, pin picker in the landlord form, radius search
-- [ ] **Phase 5 — Auth and roles:** Cognito, role guards, favorites, landlord dashboard, renter account
-- [ ] **Phase 6 — Tours:** availability, requests, statuses, SES emails, reminders, .ics
-- [ ] **Phase 7 — Admin and trust:** moderation queue, reports, landlord verification, Rekognition image moderation
-- [ ] **Phase 8 — AWS deploy:** CDK stacks (VPC, RDS, S3, CloudFront, Cognito, Lambdas, hosting), GitHub Actions CI/CD, WAF, alarms, budgets, custom domain
-- [ ] **Phase 9 — Polish:** performance pass, accessibility audit, e2e tests, README with architecture diagram, cost notes, lessons learned
+- [x] **Phase 0 — Foundation:** repo, Next.js + TS + Tailwind + shadcn, ESLint/Prettier/Husky, Docker Compose (Postgres+PostGIS, MinIO, Mailpit), Prisma schema, seed data (cities, neighborhoods, amenities)
+- [x] **Phase 1 — Listings CRUD:** data model, landlord create/edit/delete (stub auth with a hardcoded landlord), form with Zod validation
+- [x] **Phase 2 — Media:** pre-signed uploads, photo reorder/cover, floor plans, thumbnail Lambda (local: sharp in-process)
+- [x] **Phase 3 — Public search:** filters, sorting, pagination, URL-driven state, listing detail page, city/neighborhood SEO pages
+- [x] **Phase 4 — Maps:** Leaflet map view, clustered pins, search-this-area, pin picker in the landlord form, radius search
+- [x] **Phase 5 — Auth and roles:** Cognito, role guards, favorites, landlord dashboard, renter account
+- [x] **Phase 6 — Tours:** availability, requests, statuses, SES emails, reminders, .ics
+- [x] **Phase 7 — Admin and trust:** moderation queue, reports, landlord verification, Rekognition image moderation
+- [x] **Phase 8 — AWS deploy:** *(infrastructure, CI/CD and image complete + tested; first `cdk deploy` awaits cost approval — see docs/05-operations/deployment-guide.md)* CDK stacks (VPC, RDS, S3, CloudFront, Cognito, Lambdas, hosting), GitHub Actions CI/CD, WAF, alarms, budgets, custom domain
+- [x] **Phase 9 — Polish:** performance pass, accessibility audit, e2e tests, README with architecture diagram, cost notes, lessons learned
 - [ ] **Phase 10 — Later:** messaging, saved-search alerts, multi-unit buildings, Nepali language, PWA, featured listings/payments
 
 ## 11. Definition of Done (MVP)
 A landlord can sign up, create a listing with map pin, photos, floor plan, and amenities, and submit it; an admin approves it; a visitor finds it via filters on list and map views; a renter signs in, favorites it, and requests a tour; the landlord confirms and both receive email — all running on AWS with CI/CD, monitoring, and documented architecture.
 
-## 12. Open Decisions (resolve with the user before building)
-1. Next.js full-stack on Amplify vs ECS Fargate vs separate Lambda API
-2. Cognito vs custom JWT auth
-3. OSM/Nominatim vs Amazon Location Service for geocoding
-4. Whether to seed with real scraped data (avoid — use synthetic sample listings)
-5. Final product name and domain
+## 12. Open Decisions — RESOLVED (2026-11-15, see docs/02-design/adr)
+1. ~~Amplify vs ECS Fargate vs Lambda API~~ → **ECS Fargate** (ADR-0002)
+2. ~~Cognito vs custom JWT~~ → **Cognito Hosted UI + app session cookie** (ADR-0003)
+3. ~~OSM/Nominatim vs Amazon Location~~ → **OSM + proxied Nominatim** (ADR-0004)
+4. ~~Real scraped data~~ → **synthetic demo data only** (ADR-0006)
+5. ~~Name and domain~~ → **GharKhoj**, CloudFront default domain for now; custom domain later

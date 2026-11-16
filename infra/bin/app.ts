@@ -63,6 +63,6 @@ new AppStack(app, `${appName}-app`, {
   alarmEmail: ctx("alarmEmail") || undefined,
   mailFrom: ctx("mailFrom") || undefined,
   bootstrapAdminEmails: ctx("bootstrapAdminEmails") || undefined,
-  monthlyBudgetUsd: Number(ctx("monthlyBudgetUsd") ?? 75),
+  monthlyBudgetUsd: Number(ctx("monthlyBudgetUsd") ?? 150),
   desiredCount: Number(ctx("desiredCount") ?? 1),
 });
